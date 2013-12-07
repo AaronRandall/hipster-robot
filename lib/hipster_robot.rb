@@ -1,6 +1,6 @@
 class HipsterRobot
-
-  require_relative 'robotic_arm_driver/robotic_arm.rb'
+  require_relative 'robotic_arm_driver/robotic_arm'
+  require_relative 'artist_hipster_analyser'
   require 'net/http'
   require 'json'
 
@@ -8,6 +8,7 @@ class HipsterRobot
 
   def initialize
     @arm = RoboticArm.new
+    @hipster_analyser = ArtistHipsterAnalyser.new
   end
 
   def listen(url)
@@ -20,33 +21,34 @@ class HipsterRobot
         artist_name   = json_response['artistName']
         track_name    = json_response['trackName']
 
-        puts "artist_name=#{artist_name}, track_name=#{track_name}"
+        if ((artist_name != @last_artist_name) || (track_name != @last_track_name)) &&
+          (!artist_name.nil? && !track_name.nil?)
 
-        if artist_is_not_hipster(artist_name)
-          stop_track
+          if @hipster_analyser.artist_is_not_hipster(artist_name)
+            puts "Caught you listening to #{artist_name}, #{track_name}! Stop it!"
+            @last_artist_name = ""
+            @last_track_name  = ""
+#            stop_track
+          else
+            puts "Listening to #{artist_name}, #{track_name}. That's cool."
+            @last_artist_name = artist_name
+            @last_track_name  = track_name
+          end
         end
-
-        sleep DELAY_BETWEEN_REQUESTS_SECONDS
       end
+
+      sleep DELAY_BETWEEN_REQUESTS_SECONDS
     end
   end
 
   private
 
-  def artist_is_not_hipster(artist_name)
-    if artist_name == "Taylor Swift" 
-      return true
-    end
-
-    return false
-  end
-
   def stop_track
     @arm.perform_action(RoboticArm::ELBOW_UP, 2)
     @arm.perform_action(RoboticArm::BASE_RIGHT, 6)
     @arm.perform_action(RoboticArm::SHOULDER_DOWN, 1.4)
-    @arm.perform_action(RoboticArm::SHOULDER_UP, 1.6)
-    @arm.perform_action(RoboticArm::BASE_LEFT, 6)
+    @arm.perform_action(RoboticArm::SHOULDER_UP, 1.7)
+    @arm.perform_action(RoboticArm::BASE_LEFT, 5.95)
     @arm.perform_action(RoboticArm::ELBOW_DOWN, 1.76)
   end
 
