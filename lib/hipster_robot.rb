@@ -26,9 +26,9 @@ class HipsterRobot
 
           if @hipster_analyser.artist_is_not_hipster(artist_name)
             puts "Caught you listening to #{artist_name}, #{track_name}! Stop it!"
+            stop_track
             @last_artist_name = ""
             @last_track_name  = ""
-#            stop_track
           else
             puts "Listening to #{artist_name}, #{track_name}. That's cool."
             @last_artist_name = artist_name
